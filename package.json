@@ -20,7 +20,6 @@
     "ethers": "^5.6.2",
     "minimst": "^0.0.1-security",
     "nodemailer": "^6.7.3",
-    "opensea-js": "^3.0.4",
     "play-sound": "^1.1.5",
     "web3": "^1.7.1"
   }

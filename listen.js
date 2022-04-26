@@ -46,7 +46,7 @@ if (args.leverage) LEVERAGE = true
 if (args.alarm) ALARM = true
 
 // config the loading animation
-const loader = new LoadingAnimation(`🕵️‍♀️  monitoring...`)
+// const loader = new LoadingAnimation(`🕵️‍♀️  monitoring...`)
 
 const main = async () => {
   console.clear()
@@ -115,7 +115,7 @@ const alchemy_subscribe = async (network, address) => {
     })
   }
   printBanner(`Monitoring Info`, banner, 100)
-  loader.start()
+  // loader.start()
   let minted = []
   web3.eth.subscribe(
     "alchemy_filteredFullPendingTransactions",
@@ -126,7 +126,7 @@ const alchemy_subscribe = async (network, address) => {
       const time = new Date()
       const mint_amount = PAYABLE ? 3 : 3
       if (!err) {
-        loader.stop()
+        // loader.stop()
         if (txInfo !== null) {
           if (txInfo.from.toLowerCase() === address.toLowerCase()) {
             console.log(
@@ -226,7 +226,7 @@ const alchemy_subscribe = async (network, address) => {
                                     console.log("❌ Mail sending failed!")
                                   }
                                 }
-                                loader.start()
+                                // loader.start()
                               } catch (error) {
                                 console.error(error.message)
                               }
@@ -234,17 +234,17 @@ const alchemy_subscribe = async (network, address) => {
                               console.log(
                                 chalk.red("❌ this nft has been minted")
                               )
-                              loader.start()
+                              // loader.start()
                             }
                           } else {
                             console.log(
                               chalk.red("❌ minting amount is more than 3")
                             )
-                            loader.start()
+                            // loader.start()
                           }
                         } else {
                           console.log(chalk.red("❌ paramter type error"))
-                          loader.start()
+                          // loader.start()
                         }
                       } else {
                         console.log(
@@ -259,26 +259,26 @@ const alchemy_subscribe = async (network, address) => {
                           }etherscan.io/tx/${txInfo.hash}</p>`
                         )
                         console.log("📧 Mail sending successed!")
-                        loader.start()
+                        // loader.start()
                       }
                     } else {
                       console.log(chalk.red(`❌ it's not a minting method`))
-                      loader.start()
+                      // loader.start()
                     }
                   } else {
                     console.log(chalk.red(`❌ it's not an ERC721 tx`))
-                    loader.start()
+                    // loader.start()
                   }
                 } catch (error) {
                   console.error(error)
                 }
               } else {
                 console.log(chalk.red("❌ tx value is more than 0.1E"))
-                loader.start()
+                // loader.start()
               }
             } else {
               console.log(chalk.red(`❌ it's not a free tx`))
-              loader.start()
+              // loader.start()
             }
           }
         }
