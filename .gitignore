@@ -1,8 +1,9 @@
 .env
 /node_modules
 /logs
-/test
-/utils
-/alarm
+/test/listen_rinkeby.js
+/utils/etherscan.js
+/utils/play_alarm.js
 ecosystem.config.cjs
+/alarm
 yarn.lock
