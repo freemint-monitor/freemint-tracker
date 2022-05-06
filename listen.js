@@ -219,7 +219,7 @@ const alchemy_subscribe = async (network, address) => {
                                         network == "mainnet"
                                           ? ""
                                           : network + "."
-                                      }etherscan.io/tx/${txInfo.hash}</p>`
+                                      }etherscan.io/tx/${follow_tx[0].hash}</p>`
                                     )
                                     console.log("📧 Mail sending successed!")
                                   } catch (error) {
