@@ -64,14 +64,14 @@ module.exports = {
       out_file: "logs/out.log",
     },
     {
-      name: "app9",
+      name: "app10",
       script: "node",
       args: "listen 0xd045cc3e4428222eeb1602d63897a32c32440a6c",
       error_file: "logs/err.log",
       out_file: "logs/out.log",
     },
     {
-      name: "app9",
+      name: "app11",
       script: "node",
       args: "listen 0xa5f6d896e8b4d29ac6e5d8c4b26f8d2073ac90ae",
       error_file: "logs/err.log",
