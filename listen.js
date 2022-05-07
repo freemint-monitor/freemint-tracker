@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { LoadingAnimation } from "./cli-style/Loading.js"
 import { createAlchemyWeb3 } from "@alch/alchemy-web3"
 import { printBanner } from "./cli-style/banner.js"
@@ -67,7 +68,7 @@ const alchemy_subscribe = async (network, address) => {
   let wallet1
   if (network == "mainnet") {
     wallet = new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)
-    wallet1 = new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY_1, provider)
+    if(LEVERAGE) wallet1 = new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY_1, provider)
   }
   if (network == "rinkeby") {
     wallet = new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)
@@ -219,7 +220,7 @@ const alchemy_subscribe = async (network, address) => {
                                         network == "mainnet"
                                           ? ""
                                           : network + "."
-                                      }etherscan.io/tx/${txInfo.hash}</p>`
+                                      }etherscan.io/tx/${follow_tx[0].hash}</p>`
                                     )
                                     console.log("📧 Mail sending successed!")
                                   } catch (error) {

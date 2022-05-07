@@ -1,6 +1,7 @@
 ﻿# freemint_monitor
 
 ### 配置.env
+
 ```
 MAINNET_PRIVATE_KEY     主网钱包私钥
 MAINNET_PRIVATE_KEY_1   需要两个钱包跟单可配置，后续做多钱包
