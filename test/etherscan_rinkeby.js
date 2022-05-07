@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config('.env')
 
 const ETHERSCAN_URL = "https://api-rinkeby.etherscan.io/api"
-const LOCAL_PROXY = { protocol: "http", host: "127.0.0.1", port: "56554" }
+// const LOCAL_PROXY = { protocol: "http", host: "127.0.0.1", port: "56554" }
 const ETHERSCAN_API = process.env.ETHERSCAN_KEY
 
 // 根据钱包地址获取交易信息
@@ -60,7 +60,7 @@ const sendAxiosRequest = async (params) => {
   return await axios({
     url: ETHERSCAN_URL,
     params,
-    proxy: LOCAL_PROXY,
+    // proxy: LOCAL_PROXY,
   })
 }
 
