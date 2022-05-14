@@ -61,17 +61,23 @@ const main = async () => {
 const alchemy_subscribe = async (network, address) => {
   let alchemy_url = `wss://eth-${network}.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`
   let web3 = createAlchemyWeb3(alchemy_url)
-  const provider = new ethers.providers.AlchemyProvider(network, process.ALCHEMY_KEY)
+  const provider = new ethers.providers.AlchemyProvider(
+    network,
+    process.ALCHEMY_KEY
+  )
 
-  let wallet
-  let wallet1
+  let wallets
   if (network == "mainnet") {
-    wallet = new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)
-    if(LEVERAGE) wallet1 = new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY_1, provider)
+    wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
+    if (LEVERAGE)
+      wallets.push(ethers.Wallet(process.env.MAINNET_PRIVATE_KEY_1, provider))
   }
   if (network == "rinkeby") {
-    wallet = new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)
-    if(LEVERAGE) wallet1 = new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY_1, provider)
+    wallets = [new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)]
+    if (LEVERAGE)
+      wallets.push(
+        new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY_1, provider)
+      )
   }
 
   // config the banner
@@ -89,11 +95,11 @@ const alchemy_subscribe = async (network, address) => {
     },
     {
       label: "👛 Current Main Wallet ",
-      content: await wallet.getAddress(),
+      content: await wallets[0].getAddress(),
     },
     {
       label: "💰 Wallet Balance",
-      content: `${ethers.utils.formatEther(await wallet.getBalance())}Ξ`,
+      content: `${ethers.utils.formatEther(await wallets[0].getBalance())}Ξ`,
     },
     {
       label: "💻 Monored Address",
@@ -107,11 +113,11 @@ const alchemy_subscribe = async (network, address) => {
   if (LEVERAGE) {
     banner.splice(3, 0, {
       label: "👛 Current Main Wallet 2 ",
-      content: await wallet1.getAddress(),
+      content: await wallets[1].getAddress(),
     })
     banner.splice(5, 0, {
       label: "💰 Wallet 2 Balance",
-      content: `${ethers.utils.formatEther(await wallet1.getBalance())}Ξ`,
+      content: `${ethers.utils.formatEther(await wallets[1].getBalance())}Ξ`,
     })
   }
   printBanner(`Monitoring Info`, banner, 100)
@@ -125,163 +131,138 @@ const alchemy_subscribe = async (network, address) => {
     async (err, txInfo) => {
       const time = new Date()
       const mint_amount = PAYABLE ? 3 : 3
-      if (!err) {
-        // loader.stop()
-        if (txInfo !== null) {
-          if (txInfo.from.toLowerCase() === address.toLowerCase()) {
-            console.log(
-              `${"-".repeat(40)} ${time.toLocaleString()} ${"-".repeat(40)}`
-            )
-            console.log(`🔍 Found a transaction: ${txInfo.hash}`)
-            if (Number(txInfo.value) == "0" || PAYABLE) {
-              if (ethers.utils.formatEther(txInfo.value) <= 0.1) {
-                try {
-                  console.log("🤖 getting abi...")
-                  let abi = await etherscan.getABIbyContractAddress(txInfo.to)
-                  if (checkERC721(abi)) {
-                    console.log(
-                      `🤑 it's an ERC721 tx, contract address: ${chalk.green(
-                        txInfo.to
-                      )}`
-                    )
-                    const contract = new ethers.Contract(txInfo.to, abi, wallet)
-                    let method = contract.interface.getFunction(
-                      txInfo.input.slice(0, 10)
-                    )
-                    if (!ERC721.includes(method.name)) {
-                      let paramIncludesAddress = false
-                      method.inputs.forEach((param) => {
-                        if (param.type == "address") paramIncludesAddress = true
-                      })
-                      if (!paramIncludesAddress && method.inputs.length == 1) {
-                        if (
-                          method.inputs[0].type == "uint8" ||
-                          method.inputs[0].type == "uint256"
-                        ) {
-                          if (
-                            txInfo.input.slice(txInfo.input.length - 2) <=
-                            mint_amount
-                          ) {
-                            let mintedAddress = await getMinted()
-                            if (!mintedAddress.includes(txInfo.to)) {
-                              try {
-                                console.log("🚚 sending transaction...")
-                                writeMinted(txInfo.to)
-                                let sendPromise = [
-                                  wallet.sendTransaction({
-                                    to: txInfo.to,
-                                    gasLimit: txInfo.gas,
-                                    data: txInfo.input,
-                                    maxPriorityFeePerGas:
-                                      txInfo.maxPriorityFeePerGas,
-                                    maxFeePerGas: txInfo.maxFeePerGas,
-                                    value: txInfo.value,
-                                  }),
-                                ]
-                                if (LEVERAGE)
-                                  sendPromise.push(
-                                    wallet1.sendTransaction({
-                                      to: txInfo.to,
-                                      gasLimit: txInfo.gas,
-                                      data: txInfo.input,
-                                      maxPriorityFeePerGas:
-                                        txInfo.maxPriorityFeePerGas,
-                                      maxFeePerGas: txInfo.maxFeePerGas,
-                                      value: txInfo.value,
-                                    })
-                                  )
-                                let follow_tx = await Promise.all(sendPromise)
-                                // await follow_tx.wait()
-                                if (ALARM) playSound()
-                                for (let tx of follow_tx) {
-                                  console.log(
-                                    chalk.green(
-                                      `✅ success! check the transaction info: https://etherscan.io/tx/${tx.hash}`
-                                    )
-                                  )
-                                }
-                                minted.push(txInfo.to)
-                                // write the logs
-                                writeLog(TARGET_ADDRESS, {
-                                  contractAddress: txInfo.to,
-                                  txHash: txInfo.hash,
-                                  time: time.toLocaleString(),
-                                })
-                                // send email
-                                if (
-                                  process.env.EMAIL_ACCOUNT &&
-                                  process.env.EMAIL_PASSWARD
-                                ) {
-                                  try {
-                                    await sendEmail(
-                                      "发送mint交易😊",
-                                      `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://${
-                                        network == "mainnet"
-                                          ? ""
-                                          : network + "."
-                                      }etherscan.io/tx/${txInfo.hash}</p>`
-                                    )
-                                    console.log("📧 Mail sending successed!")
-                                  } catch (error) {
-                                    console.log("❌ Mail sending failed!")
-                                  }
-                                }
-                                // loader.start()
-                              } catch (error) {
-                                console.error(error.message)
-                              }
-                            } else {
-                              console.log(
-                                chalk.red("❌ this nft has been minted")
-                              )
-                              // loader.start()
-                            }
-                          } else {
-                            console.log(
-                              chalk.red("❌ minting amount is more than 3")
-                            )
-                            // loader.start()
-                          }
-                        } else {
-                          console.log(chalk.red("❌ paramter type error"))
-                          // loader.start()
-                        }
-                      } else {
-                        console.log(
-                          chalk.red(
-                            "❌ param includes address, we can't resolve it yet / function has more than 1 params, we can't resolve it too"
-                          )
-                        )
-                        await sendEmail(
-                          "前端MINT事件😊",
-                          `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
-                            network == "mainnet" ? "" : network + "."
-                          }etherscan.io/tx/${txInfo.hash}</p>`
-                        )
-                        console.log("📧 Mail sending successed!")
-                        // loader.start()
-                      }
-                    } else {
-                      console.log(chalk.red(`❌ it's not a minting method`))
-                      // loader.start()
-                    }
-                  } else {
-                    console.log(chalk.red(`❌ it's not an ERC721 tx`))
-                    // loader.start()
-                  }
-                } catch (error) {
-                  console.error(error)
-                }
-              } else {
-                console.log(chalk.red("❌ tx value is more than 0.1E"))
-                // loader.start()
+
+      /**
+       * @description line 135 - 153
+       *  print in console when finding a transaction
+       *  transactions are filtered based on user paraments
+       */
+
+      if (err) return
+      // loader.stop()
+      if (txInfo == null) return
+      if (txInfo.from.toLowerCase() !== address.toLowerCase()) return
+      console.log(
+        `${"-".repeat(40)} ${time.toLocaleString()} ${"-".repeat(40)}`
+      )
+      console.log(`🔍 Found a transaction: ${txInfo.hash}`)
+      if (!(Number(txInfo.value) == "0" || PAYABLE)) {
+        console.log(chalk.red(`❌ it's not a free tx`))
+        // loader.start()
+        return
+      }
+      if (ethers.utils.formatEther(txInfo.value) > 0.1) {
+        console.log(chalk.red("❌ tx value is more than 0.1E"))
+        // loader.start()
+      }
+
+      try {
+        console.log("🤖 getting abi...")
+        let abi = await etherscan.getABIbyContractAddress(txInfo.to)
+        const contract = new ethers.Contract(txInfo.to, abi, provider)
+        const method = contract.interface.getFunction(txInfo.input.slice(0, 10))
+        const functionData = contract.interface.decodeFunctionData(
+          method,
+          txInfo.input
+        )
+        let mintedAddress = await getMinted()
+
+        if (!checkERC721(abi)) {
+          console.log(chalk.red(`❌ it's not an ERC721 tx`))
+          return
+          // loader.start()
+        }
+        console.log(
+          `🤑 it's an ERC721 tx, contract address: ${chalk.green(txInfo.to)}`
+        )
+
+        if (ERC721.includes(method.name)) {
+          console.log(chalk.red(`❌ it's not a minting method`))
+          // loader.start()
+          return
+        }
+        if (mintedAddress.includes(txInfo.to)) {
+          console.log(chalk.red("❌ this nft has been minted"))
+          // loader.start()
+          return
+        }
+        if (!method.inputs.length) {
+          console.log("❌ can't resolve paramters!")
+          await sendEmail(
+            "前端MINT事件😊",
+            `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
+              network == "mainnet" ? "" : network + "."
+            }etherscan.io/tx/${txInfo.hash}</p>`
+          )
+          console.log("📧 Mail sending successed!")
+          return
+        }
+        for (let i = 0; i < wallets.length; i++) {
+          let wallet = wallets[i]
+          let params = []
+          // analyze paramters
+          for (let j = 0; j < method.inputs.length; j++) {
+            let param = method.inputs[j]
+            if (param.type == "address") params.push(await wallet.getAddress())
+            else if (param.type == "uint256" || param.type == "uint8") {
+              if (functionData[j] > 3) {
+                console.log("❌ minting amount is more than 3")
+                return
               }
+              params.push(functionData[j])
             } else {
-              console.log(chalk.red(`❌ it's not a free tx`))
-              // loader.start()
+              console.log("❌ can't resolve paramters!")
+              await sendEmail(
+                "前端MINT事件😊",
+                `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
+                  network == "mainnet" ? "" : network + "."
+                }etherscan.io/tx/${txInfo.hash}</p>`
+              )
+              console.log("📧 Mail sending successed!")
+              return
             }
           }
+          const input_data = contract.interface.encodeFunctionData(
+            method,
+            params
+          )
+          const tx = await wallet.sendTransaction({
+            to: txInfo.to,
+            gasLimit: txInfo.gas,
+            data: input_data,
+            maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
+            maxFeePerGas: txInfo.maxFeePerGas,
+            value: txInfo.value,
+          })
+          writeMinted(txInfo.to)
+          console.log(
+            chalk.green(
+              `✅ success! check the transaction info: https://etherscan.io/tx/${tx.hash}`
+            )
+          )
         }
+        minted.push(txInfo.to)
+        if (ALARM) playSound()
+        // write the logs
+        writeLog(TARGET_ADDRESS, {
+          contractAddress: txInfo.to,
+          txHash: txInfo.hash,
+          time: time.toLocaleString(),
+        })
+        // send email
+        if (process.env.EMAIL_ACCOUNT && process.env.EMAIL_PASSWARD) {
+          try {
+            await sendEmail(
+              "发送mint交易😊",
+              `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://rinkeby.etherscan.io/tx/${follow_tx[0].hash}</p>`
+            )
+            console.log("📧 Mail sending successed!")
+          } catch (error) {
+            console.log("❌ Mail sending failed!")
+          }
+        }
+      } catch (error) {
+        console.error(error)
       }
     }
   )
