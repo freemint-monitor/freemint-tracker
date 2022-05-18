@@ -208,20 +208,22 @@ const alchemy_subscribe = async (network, address) => {
           console.log(chalk.red("❌ this nft has been minted"))
           return
         }
-        if (!method.inputs.length) {
-          console.log("❌ can't resolve paramters!")
-          await sendEmail(
-            "前端MINT事件😊",
-            `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
-              network == "mainnet" ? "" : network + "."
-            }etherscan.io/tx/${txInfo.hash}</p>`
-          )
-          console.log("📧 Mail sending successed!")
-          return
-        }
         for (let i = 0; i < wallets.length; i++) {
           let wallet = wallets[i]
           let params = []
+          if (!method.inputs.length) {
+            txWaitToBeSent.push(
+              wallet.sendTransaction({
+                to: txInfo.to,
+                gasLimit: txInfo.gas,
+                data: input_data,
+                maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
+                maxFeePerGas: txInfo.maxFeePerGas,
+                value: txInfo.value,
+              })
+            )
+            continue
+          }
           // analyze paramters
           for (let j = 0; j < method.inputs.length; j++) {
             let param = method.inputs[j]
