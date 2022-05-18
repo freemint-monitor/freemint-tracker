@@ -1,9 +1,6 @@
 .env
 /node_modules
 /logs
-/test/listen_rinkeby.js
-/utils/etherscan.js
-/utils/play_alarm.js
-ecosystem.config.cjs
+mintedAddress.json
 /alarm
 yarn.lock
