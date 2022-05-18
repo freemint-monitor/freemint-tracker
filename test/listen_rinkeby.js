@@ -45,9 +45,6 @@ if (args.leverage) LEVERAGE = true
 
 if (args.alarm) ALARM = true
 
-// config the loading animation
-// const loader = new LoadingAnimation(`🕵️‍♀️  monitoring...`)
-
 const main = async () => {
   console.clear()
   alchemy_subscribe("rinkeby", TARGET_ADDRESS)
@@ -69,15 +66,31 @@ const alchemy_subscribe = async (network, address) => {
   let wallets
   if (network == "mainnet") {
     wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
-    if (LEVERAGE)
-      wallets.push(ethers.Wallet(process.env.MAINNET_PRIVATE_KEY_1, provider))
+    if (LEVERAGE) {
+      let i = 1
+      while (i) {
+        if (process.env[`MAINNET_PRIVATE_KEY_${i}`]) {
+          wallets.push(
+            new ethers.Wallet(process.env[`MAINNET_PRIVATE_KEY_${i}`], provider)
+          )
+          i++
+        } else break
+      }
+    }
   }
   if (network == "rinkeby") {
     wallets = [new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)]
-    if (LEVERAGE)
-      wallets.push(
-        new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY_1, provider)
-      )
+    if (LEVERAGE) {
+      let i = 1
+      while (i) {
+        if (process.env[`RINKEBY_PRIVATE_KEY_${i}`]) {
+          wallets.push(
+            new ethers.Wallet(process.env[`RINKEBY_PRIVATE_KEY_${i}`], provider)
+          )
+          i++
+        } else break
+      }
+    }
   }
 
   // config the banner
@@ -111,17 +124,24 @@ const alchemy_subscribe = async (network, address) => {
     },
   ]
   if (LEVERAGE) {
-    banner.splice(3, 0, {
-      label: "👛 Current Main Wallet 2 ",
-      content: await wallets[1].getAddress(),
-    })
-    banner.splice(5, 0, {
-      label: "💰 Wallet 2 Balance",
-      content: `${ethers.utils.formatEther(await wallets[1].getBalance())}Ξ`,
-    })
+    let i = 1
+    while (i) {
+      if (process.env[`${network.toUpperCase()}_PRIVATE_KEY_${i}`]) {
+        banner.splice(2 + i, 0, {
+          label: `👛 Current Main Wallet ${i} `,
+          content: await wallets[i].getAddress(),
+        })
+        banner.splice(3 + 2 * i, 0, {
+          label: `💰 Wallet ${i} Balance`,
+          content: `${ethers.utils.formatEther(
+            await wallets[i].getBalance()
+          )}Ξ`,
+        })
+        i++
+      } else break
+    }
   }
   printBanner(`Monitoring Info`, banner, 100)
-  // loader.start()
   let minted = []
   web3.eth.subscribe(
     "alchemy_filteredFullPendingTransactions",
@@ -133,7 +153,7 @@ const alchemy_subscribe = async (network, address) => {
       const mint_amount = PAYABLE ? 3 : 3
 
       /**
-       * @description line 135 - 153
+       * @description
        *  print in console when finding a transaction
        *  transactions are filtered based on user paraments
        */
@@ -167,10 +187,14 @@ const alchemy_subscribe = async (network, address) => {
         )
         let mintedAddress = await getMinted()
 
+        /**
+         * @dev store the promise of sending transaction, send them with promise.all
+         */
+        let txWaitToBeSent = []
+
         if (!checkERC721(abi)) {
           console.log(chalk.red(`❌ it's not an ERC721 tx`))
           return
-          // loader.start()
         }
         console.log(
           `🤑 it's an ERC721 tx, contract address: ${chalk.green(txInfo.to)}`
@@ -178,12 +202,10 @@ const alchemy_subscribe = async (network, address) => {
 
         if (ERC721.includes(method.name)) {
           console.log(chalk.red(`❌ it's not a minting method`))
-          // loader.start()
           return
         }
         if (mintedAddress.includes(txInfo.to)) {
           console.log(chalk.red("❌ this nft has been minted"))
-          // loader.start()
           return
         }
         if (!method.inputs.length) {
@@ -226,21 +248,27 @@ const alchemy_subscribe = async (network, address) => {
             method,
             params
           )
-          const tx = await wallet.sendTransaction({
-            to: txInfo.to,
-            gasLimit: txInfo.gas,
-            data: input_data,
-            maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
-            maxFeePerGas: txInfo.maxFeePerGas,
-            value: txInfo.value,
-          })
-          writeMinted(txInfo.to)
-          console.log(
-            chalk.green(
-              `✅ success! check the transaction info: https://etherscan.io/tx/${tx.hash}`
-            )
+          txWaitToBeSent.push(
+            wallet.sendTransaction({
+              to: txInfo.to,
+              gasLimit: txInfo.gas,
+              data: input_data,
+              maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
+              maxFeePerGas: txInfo.maxFeePerGas,
+              value: txInfo.value,
+            })
           )
         }
+        /**
+         * @dev send transaction!
+         */
+        const res = await Promise.all(txWaitToBeSent)
+        console.log(
+          chalk.green(
+            `✅ success! check the transaction info: https://etherscan.io/tx/${res[0].hash}`
+          )
+        )
+        writeMinted(txInfo.to)
         minted.push(txInfo.to)
         if (ALARM) playSound()
         // write the logs
@@ -254,7 +282,7 @@ const alchemy_subscribe = async (network, address) => {
           try {
             await sendEmail(
               "发送mint交易😊",
-              `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://rinkeby.etherscan.io/tx/${follow_tx[0].hash}</p>`
+              `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://etherscan.io/tx/${res[0].hash}</p>`
             )
             console.log("📧 Mail sending successed!")
           } catch (error) {
