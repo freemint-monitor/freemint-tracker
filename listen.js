@@ -151,7 +151,8 @@ const alchemy_subscribe = async (network, address) => {
     async (err, txInfo) => {
       const time = new Date()
       const mint_amount = PAYABLE ? 3 : 3
-
+      const gas_limit = parseInt(txInfo.gas)
+      const gas_price = ethers.utils.formatUnits(parseInt(txInfo.gasPrice), 'gwei')
       /**
        * @description
        *  print in console when finding a transaction
@@ -174,8 +175,12 @@ const alchemy_subscribe = async (network, address) => {
       if (ethers.utils.formatEther(txInfo.value) > 0.1) {
         console.log(chalk.red("❌ tx value is more than 0.1E"))
         // loader.start()
+        return
       }
-
+      if (gas_limit > 150000 || gas_price > 88) {
+        console.log(chalk.red("❌ gas is too high!"))
+        return
+      }
       try {
         console.log("🤖 getting abi...")
         let abi = await etherscan.getABIbyContractAddress(txInfo.to)
@@ -229,8 +234,8 @@ const alchemy_subscribe = async (network, address) => {
             let param = method.inputs[j]
             if (param.type == "address") params.push(await wallet.getAddress())
             else if (param.type == "uint256" || param.type == "uint8") {
-              if (functionData[j] > 3) {
-                console.log("❌ minting amount is more than 3")
+              if (functionData[j] > mint_amount) {
+                console.log(`❌ minting amount is more than ${mint_amount}`)
                 return
               }
               params.push(functionData[j])
