@@ -1,4 +1,5 @@
 import fs from "fs"
+import path from "path"
 
 export const ERC721 = [
   "balanceOf",
@@ -53,6 +54,13 @@ export const writeLog = (address, tx) => {
 
 export const getMinted =  () => {
   return new Promise(resolve => {
+    if(!fs.existsSync('./mintedAddress.json')) {
+      path.join('./', 'mintedAddress.json')
+      fs.writeFile('./mintedAddress.json', JSON.stringify([], null, 4), () => {
+        console.log('successfully created mintedAddress.json')
+        resolve([])
+      })
+    }
     fs.readFile('./mintedAddress.json', (err, data) => {
       if(err) console.error(err)
       let mintedAddress = JSON.parse(data)
@@ -65,7 +73,7 @@ export const writeMinted = async (address) => {
   let mintedAddress = await getMinted()
   mintedAddress.push(address)
   fs.writeFile('./mintedAddress.json', JSON.stringify(mintedAddress, null, 4), () => {
-    console.log(`successful writting minted address`)
+    console.log(`successfully written minted address`)
   })
 }
 

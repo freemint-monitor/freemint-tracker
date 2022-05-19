@@ -1,6 +1,7 @@
 ﻿# freemint_monitor
 
 ### 配置.env
+自行删掉.env的example后缀
 
 ```
 MAINNET_PRIVATE_KEY     主网钱包私钥
