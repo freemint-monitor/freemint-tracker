@@ -22,6 +22,7 @@ test/test_email         测试邮件提醒（qq邮箱）
 test/try_alarm          测试闹钟功能
 test/try_ether`         测试etherscan能否返回数据
 test/listen_rinkeby     在rinkeby运行脚本
+test/try_wechat         测试公众号提醒功能(http://push.ijingniu.cn/)
 
 测试网可以用这个合约测试：0xa4D8fc7b2Af49a06Ba8Ac047536B71E1c04C9b89
 ```
