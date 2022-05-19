@@ -152,7 +152,10 @@ const alchemy_subscribe = async (network, address) => {
       const time = new Date()
       const mint_amount = PAYABLE ? 3 : 3
       const gas_limit = parseInt(txInfo.gas)
-      const gas_price = ethers.utils.formatUnits(parseInt(txInfo.gasPrice), 'gwei')
+      const gas_price = ethers.utils.formatUnits(
+        parseInt(txInfo.maxPriorityFeePerGas),
+        "gwei"
+      )
       /**
        * @description`
        *  print in console when finding a transaction
@@ -269,13 +272,13 @@ const alchemy_subscribe = async (network, address) => {
         /**
          * @dev send transaction!
          */
+        writeMinted(txInfo.to)
         const res = await Promise.all(txWaitToBeSent)
         console.log(
           chalk.green(
             `✅ success! check the transaction info: https://etherscan.io/tx/${res[0].hash}`
           )
         )
-        writeMinted(txInfo.to)
         minted.push(txInfo.to)
         if (ALARM) playSound()
         // write the logs
