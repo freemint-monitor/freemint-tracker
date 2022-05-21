@@ -224,7 +224,7 @@ const alchemy_subscribe = async (network, address) => {
               wallet.sendTransaction({
                 to: txInfo.to,
                 gasLimit: txInfo.gas,
-                data: input_data,
+                data: txInfo.input,
                 maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
                 maxFeePerGas: txInfo.maxFeePerGas,
                 value: txInfo.value,
