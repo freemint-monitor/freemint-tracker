@@ -1,5 +1,13 @@
 ﻿# freemint_monitor
 
+### 脚本说明
+在mempool中对跟踪的地址的freemint交易进行监听，对交易进行筛选后跟单；
+筛选条件有：单笔交易数量，mint函数参数，gas fee，是否已经mint过
+单笔交易数量<3可通过筛选
+mint函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
+gas fee: gas limit < 15,000，priority fee < 88gwei可通过筛选
+同一个项目仅可mint一次(防止监听地址重复mint一个项目烧太多gas)
+
 ### 配置.env
 自行删掉.env的example后缀
 
