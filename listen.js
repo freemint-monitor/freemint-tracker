@@ -180,7 +180,7 @@ const alchemy_subscribe = async (network, address) => {
         // loader.start()
         return
       }
-      if (gas_limit > 150000 || gas_price > 88) {
+      if (gas_limit > 250000 || gas_price > 88) {
         console.log(chalk.red("❌ gas is too high!"))
         return
       }
@@ -265,7 +265,10 @@ const alchemy_subscribe = async (network, address) => {
               gasLimit: txInfo.gas,
               data: input_data,
               maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
-              maxFeePerGas: txInfo.maxFeePerGas,
+              maxFeePerGas:
+                (txInfo.maxFeePerGas  > 300) && !PAYABLE
+                  ? 300
+                  : txInfo.maxFeePerGas,
               value: txInfo.value,
             })
           )
