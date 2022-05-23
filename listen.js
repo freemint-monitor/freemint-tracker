@@ -150,7 +150,8 @@ const alchemy_subscribe = async (network, address) => {
     },
     async (err, txInfo) => {
       const time = new Date()
-      const mint_amount = PAYABLE ? 3 : 3
+      const free_mint_amount = 3
+      const payable_mint_amount = 5
       const gas_limit = parseInt(txInfo.gas)
       const gas_price = ethers.utils.formatUnits(
         parseInt(txInfo.maxPriorityFeePerGas),
@@ -226,7 +227,13 @@ const alchemy_subscribe = async (network, address) => {
                 gasLimit: txInfo.gas,
                 data: txInfo.input,
                 maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
-                maxFeePerGas: txInfo.maxFeePerGas,
+                maxFeePerGas:
+                  ethers.utils.formatUnits(
+                    parseInt(txInfo.maxFeePerGas),
+                    "gwei"
+                  ) > 300 && !PAYABLE
+                    ? 300
+                    : txInfo.maxFeePerGas,
                 value: txInfo.value,
               })
             )
@@ -237,8 +244,19 @@ const alchemy_subscribe = async (network, address) => {
             let param = method.inputs[j]
             if (param.type == "address") params.push(await wallet.getAddress())
             else if (param.type == "uint256" || param.type == "uint8") {
-              if (functionData[j] > mint_amount) {
-                console.log(`❌ minting amount is more than ${mint_amount}`)
+              if (
+                functionData[j] >
+                (Number(txInfo.value) == "0"
+                  ? free_mint_amount
+                  : payable_mint_amount)
+              ) {
+                console.log(
+                  `❌ minting amount is more than ${
+                    Number(txInfo.value) == "0"
+                      ? free_mint_amount
+                      : payable_mint_amount
+                  }`
+                )
                 return
               }
               params.push(functionData[j])
@@ -266,7 +284,10 @@ const alchemy_subscribe = async (network, address) => {
               data: input_data,
               maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
               maxFeePerGas:
-                (txInfo.maxFeePerGas  > 300) && !PAYABLE
+                ethers.utils.formatUnits(
+                  parseInt(txInfo.maxFeePerGas),
+                  "gwei"
+                ) > 300 && !PAYABLE
                   ? 300
                   : txInfo.maxFeePerGas,
               value: txInfo.value,
