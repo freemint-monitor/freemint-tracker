@@ -8,6 +8,7 @@ import { ethers } from "ethers"
 import minimist from "minimist"
 import dotenv from "dotenv"
 import chalk from "chalk"
+import fs from 'fs'
 import {
   checkERC721,
   ERC721,
@@ -49,6 +50,8 @@ const main = async () => {
   console.clear()
   alchemy_subscribe("mainnet", TARGET_ADDRESS)
 }
+
+const config = JSON.parse(fs.readFileSync('config.json'))
 
 /**
  *
@@ -150,8 +153,8 @@ const alchemy_subscribe = async (network, address) => {
     },
     async (err, txInfo) => {
       const time = new Date()
-      const free_mint_amount = 3
-      const payable_mint_amount = 5
+      const free_mint_amount = config.free_mint_amount
+      const payable_mint_amount = config.payable_mint_amount
       const gas_limit = parseInt(txInfo.gas)
       const gas_price = ethers.utils.formatUnits(
         parseInt(txInfo.maxPriorityFeePerGas),
@@ -181,7 +184,7 @@ const alchemy_subscribe = async (network, address) => {
         // loader.start()
         return
       }
-      if (gas_limit > 250000 || gas_price > 88) {
+      if (gas_limit > config.max_gas_limit || gas_price > config.max_priority_fee) {
         console.log(chalk.red("❌ gas is too high!"))
         return
       }
@@ -231,8 +234,8 @@ const alchemy_subscribe = async (network, address) => {
                   ethers.utils.formatUnits(
                     parseInt(txInfo.maxFeePerGas),
                     "gwei"
-                  ) > 300 && !PAYABLE
-                    ? 300
+                  ) > config.max_gas_price && !PAYABLE
+                    ? config.max_gas_price
                     : txInfo.maxFeePerGas,
                 value: txInfo.value,
               })
@@ -287,8 +290,8 @@ const alchemy_subscribe = async (network, address) => {
                 ethers.utils.formatUnits(
                   parseInt(txInfo.maxFeePerGas),
                   "gwei"
-                ) > 300 && !PAYABLE
-                  ? 300
+                ) > config.max_gas_price && !PAYABLE
+                  ? config.max_gas_price
                   : txInfo.maxFeePerGas,
               value: txInfo.value,
             })
