@@ -40,7 +40,7 @@ EMAIL_PASSWARD          邮箱授权码
     "payable_mint_amount": 收费最大单笔交易数量,
     "max_gas_limit": 最大gas limit,
     "max_gas_price": 最高gas price(gwei),
-    "max_priority_fee": 最高矿工费(gwei),
+    "max_priority_fee": 最高矿工费(gwei,主要不要大于gas price),
     "local_proxy_port": 本地代理端口号(不设置代理将端口设为0)
 }
 ```
