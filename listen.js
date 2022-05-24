@@ -242,7 +242,7 @@ const alchemy_subscribe = async (network, address) => {
                     parseInt(txInfo.maxFeePerGas),
                     "gwei"
                   ) > config.max_gas_price && !PAYABLE
-                    ? config.max_gas_price
+                    ? config.max_gas_price * 1000000000
                     : txInfo.maxFeePerGas,
                 value: txInfo.value,
               })
@@ -298,7 +298,7 @@ const alchemy_subscribe = async (network, address) => {
                   parseInt(txInfo.maxFeePerGas),
                   "gwei"
                 ) > config.max_gas_price && !PAYABLE
-                  ? config.max_gas_price
+                  ? config.max_gas_price * 1000000000
                   : txInfo.maxFeePerGas,
               value: txInfo.value,
             })

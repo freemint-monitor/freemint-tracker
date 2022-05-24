@@ -8,6 +8,7 @@ import { ethers } from "ethers"
 import minimist from "minimist"
 import dotenv from "dotenv"
 import chalk from "chalk"
+import fs from "fs"
 import {
   checkERC721,
   ERC721,
@@ -49,6 +50,8 @@ const main = async () => {
   console.clear()
   alchemy_subscribe("rinkeby", TARGET_ADDRESS)
 }
+
+const config = JSON.parse(fs.readFileSync("config.json"))
 
 /**
  *
@@ -150,15 +153,15 @@ const alchemy_subscribe = async (network, address) => {
     },
     async (err, txInfo) => {
       const time = new Date()
-      const mint_amount = PAYABLE ? 3 : 3
+      const free_mint_amount = config.free_mint_amount
+      const payable_mint_amount = config.payable_mint_amount
       const gas_limit = parseInt(txInfo.gas)
       const gas_price = ethers.utils.formatUnits(
         parseInt(txInfo.maxPriorityFeePerGas),
         "gwei"
       )
-      console.log(`gasLimit:${gas_limit}\npriorityFee:${gas_price}`)
       /**
-       * @description`
+       * @description
        *  print in console when finding a transaction
        *  transactions are filtered based on user paraments
        */
@@ -181,7 +184,10 @@ const alchemy_subscribe = async (network, address) => {
         // loader.start()
         return
       }
-      if (gas_limit > 150000 || gas_price > 88) {
+      if (
+        gas_limit > config.max_gas_limit ||
+        gas_price > config.max_priority_fee
+      ) {
         console.log(chalk.red("❌ gas is too high!"))
         return
       }
@@ -231,7 +237,13 @@ const alchemy_subscribe = async (network, address) => {
                 gasLimit: txInfo.gas,
                 data: txInfo.input,
                 maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
-                maxFeePerGas: txInfo.maxFeePerGas,
+                maxFeePerGas:
+                  ethers.utils.formatUnits(
+                    parseInt(txInfo.maxFeePerGas),
+                    "gwei"
+                  ) > config.max_gas_price && !PAYABLE
+                    ? config.max_gas_price * 1000000000
+                    : txInfo.maxFeePerGas,
                 value: txInfo.value,
               })
             )
@@ -242,8 +254,19 @@ const alchemy_subscribe = async (network, address) => {
             let param = method.inputs[j]
             if (param.type == "address") params.push(await wallet.getAddress())
             else if (param.type == "uint256" || param.type == "uint8") {
-              if (functionData[j] > mint_amount) {
-                console.log(`❌ minting amount is more than ${mint_amount}`)
+              if (
+                functionData[j] >
+                (Number(txInfo.value) == "0"
+                  ? free_mint_amount
+                  : payable_mint_amount)
+              ) {
+                console.log(
+                  `❌ minting amount is more than ${
+                    Number(txInfo.value) == "0"
+                      ? free_mint_amount
+                      : payable_mint_amount
+                  }`
+                )
                 return
               }
               params.push(functionData[j])
@@ -263,13 +286,20 @@ const alchemy_subscribe = async (network, address) => {
             method,
             params
           )
+
           txWaitToBeSent.push(
             wallet.sendTransaction({
               to: txInfo.to,
               gasLimit: txInfo.gas,
               data: input_data,
               maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
-              maxFeePerGas: txInfo.maxFeePerGas,
+              maxFeePerGas:
+                ethers.utils.formatUnits(
+                  parseInt(txInfo.maxFeePerGas),
+                  "gwei"
+                ) > config.max_gas_price && !PAYABLE
+                  ? config.max_gas_price * 1000000000
+                  : txInfo.maxFeePerGas,
               value: txInfo.value,
             })
           )

@@ -37,7 +37,7 @@ export const writeLog = (address, tx) => {
       monoredAddress: address,
       txLogs: [tx],
     }
-    fs.writeFile(path, JSON.stringify(log,null,4), () => {
+    fs.writeFile(path, JSON.stringify(log, null, 4), () => {
       console.log(`successful writting the log in ${path}`)
     })
   } else {
@@ -45,42 +45,46 @@ export const writeLog = (address, tx) => {
       if (err) console.error(err)
       let log = JSON.parse(data)
       log.txLogs.push(tx)
-      fs.writeFile(path, JSON.stringify(log,null,4), () => {
+      fs.writeFile(path, JSON.stringify(log, null, 4), () => {
         console.log(`successful editting the log in ${path}`)
       })
     })
   }
 }
 
-export const getMinted =  () => {
-  return new Promise(resolve => {
-    if(!fs.existsSync('./mintedAddress.json')) {
-      path.join('./', 'mintedAddress.json')
-      fs.writeFile('./mintedAddress.json', JSON.stringify([], null, 4), () => {
-        console.log('successfully created mintedAddress.json')
+export const getMinted = () => {
+  return new Promise((resolve) => {
+    if (!fs.existsSync("./mintedAddress.json")) {
+      path.join("./", "mintedAddress.json")
+      fs.writeFile("./mintedAddress.json", JSON.stringify([], null, 4), () => {
+        console.log("successfully created mintedAddress.json")
         resolve([])
       })
-    }
-    fs.readFile('./mintedAddress.json', (err, data) => {
-      if(err) console.error(err)
-      let mintedAddress = JSON.parse(data)
-      resolve(mintedAddress)
-    })
+    } else
+      fs.readFile("./mintedAddress.json", (err, data) => {
+        if (err) console.error(err)
+        let mintedAddress = JSON.parse(data)
+        resolve(mintedAddress)
+      })
   })
 }
 
 export const writeMinted = async (address) => {
   let mintedAddress = await getMinted()
   mintedAddress.push(address)
-  fs.writeFile('./mintedAddress.json', JSON.stringify(mintedAddress, null, 4), () => {
-    console.log(`successfully written minted address`)
-  })
+  fs.writeFile(
+    "./mintedAddress.json",
+    JSON.stringify(mintedAddress, null, 4),
+    () => {
+      console.log(`successfully written minted address`)
+    }
+  )
 }
 
 export const readJson = (path) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     fs.readFile(path, (err, data) => {
-      if(err) console.error(err)
+      if (err) console.error(err)
       let res = JSON.parse(data)
       resolve(res)
     })
@@ -88,10 +92,12 @@ export const readJson = (path) => {
 }
 
 export const formatTxt = (path, output) => {
-  let res = fs.readFileSync(path, 'utf8')
+  let res = fs.readFileSync(path, "utf8")
   let my_address = []
-  res.split(/\r?\n/).forEach(add => {
+  res.split(/\r?\n/).forEach((add) => {
     my_address.push(add.trim())
   })
-  fs.writeFile(output, JSON.stringify(my_address, null, 4), () => {console.log('done')})
+  fs.writeFile(output, JSON.stringify(my_address, null, 4), () => {
+    console.log("done")
+  })
 }
