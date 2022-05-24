@@ -188,6 +188,10 @@ const alchemy_subscribe = async (network, address) => {
       try {
         console.log("🤖 getting abi...")
         let abi = await etherscan.getABIbyContractAddress(txInfo.to)
+        if (abi == "Contract source code not verified") {
+          console.log(chalk.red("❌ contract source code is not open source"))
+          return
+        }
         const contract = new ethers.Contract(txInfo.to, abi, provider)
         const method = contract.interface.getFunction(txInfo.input.slice(0, 10))
         const functionData = contract.interface.decodeFunctionData(

@@ -8,7 +8,7 @@ import { ethers } from "ethers"
 import minimist from "minimist"
 import dotenv from "dotenv"
 import chalk from "chalk"
-import fs from 'fs'
+import fs from "fs"
 import {
   checkERC721,
   ERC721,
@@ -51,7 +51,7 @@ const main = async () => {
   alchemy_subscribe("mainnet", TARGET_ADDRESS)
 }
 
-const config = JSON.parse(fs.readFileSync('config.json'))
+const config = JSON.parse(fs.readFileSync("config.json"))
 
 /**
  *
@@ -184,13 +184,20 @@ const alchemy_subscribe = async (network, address) => {
         // loader.start()
         return
       }
-      if (gas_limit > config.max_gas_limit || gas_price > config.max_priority_fee) {
+      if (
+        gas_limit > config.max_gas_limit ||
+        gas_price > config.max_priority_fee
+      ) {
         console.log(chalk.red("❌ gas is too high!"))
         return
       }
       try {
         console.log("🤖 getting abi...")
         let abi = await etherscan.getABIbyContractAddress(txInfo.to)
+        if (abi == "Contract source code not verified") {
+          console.log(chalk.red("❌ contract source code is not open source"))
+          return
+        }
         const contract = new ethers.Contract(txInfo.to, abi, provider)
         const method = contract.interface.getFunction(txInfo.input.slice(0, 10))
         const functionData = contract.interface.decodeFunctionData(
