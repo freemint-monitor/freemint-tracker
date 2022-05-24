@@ -3,5 +3,6 @@
     "payable_mint_amount": 5,
     "max_gas_limit": 250000,
     "max_gas_price": 300,
-    "max_priority_fee": 88
+    "max_priority_fee": 88,
+    "local_proxy_port": 7890
 }

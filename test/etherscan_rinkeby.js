@@ -1,9 +1,12 @@
 import axios from "axios"
-import dotenv from 'dotenv'
-dotenv.config('.env')
+import dotenv from "dotenv"
+dotenv.config(".env")
 
 const ETHERSCAN_URL = "https://api-rinkeby.etherscan.io/api"
-// const LOCAL_PROXY = { protocol: "http", host: "127.0.0.1", port: "62961" }
+const PORT = JSON.parse(fs.readFileSync("config.json")).local_proxy_port
+const LOCAL_PROXY = PORT
+  ? { protocol: "http", host: "127.0.0.1", port: PORT }
+  : null
 const ETHERSCAN_API = process.env.ETHERSCAN_KEY
 
 // 根据钱包地址获取交易信息
@@ -21,7 +24,8 @@ const getTxInfoByUserAddress = async (address, startblock, endblock) => {
     if (res.status == "200") return res.data.result
   } catch (error) {
     console.error(error.message)
-  }f
+  }
+  f
 }
 
 // 根据合约地址获取token信息(需要升级pro版)
@@ -60,7 +64,7 @@ const sendAxiosRequest = async (params) => {
   return await axios({
     url: ETHERSCAN_URL,
     params,
-    // proxy: LOCAL_PROXY,
+    proxy: LOCAL_PROXY,
   })
 }
 
