@@ -1,3 +1,4 @@
+import fs from "fs"
 import axios from "axios"
 import dotenv from "dotenv"
 dotenv.config(".env")
@@ -61,11 +62,12 @@ const getABIbyContractAddress = async (address) => {
 // 发送axios请求
 const sendAxiosRequest = async (params) => {
   params.apikey = ETHERSCAN_API
-  return await axios({
+  const config = {
     url: ETHERSCAN_URL,
     params,
-    proxy: LOCAL_PROXY,
-  })
+  }
+  if (LOCAL_PROXY) config.proxy = LOCAL_PROXY
+  return await axios(config)
 }
 
 export const etherscan = {
