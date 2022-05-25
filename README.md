@@ -4,15 +4,14 @@
 
 在 mempool 中对跟踪的地址的 freemint 交易进行监听，对交易进行筛选后跟单；
 
-筛选条件有：单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过
+筛选条件有：
+- 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量<3 可通过筛选
 
-单笔交易数量<3 可通过筛选
+- mint 函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
 
-mint 函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
+- gas fee: gas limit < 15,000，priority fee < 88gwei 可通过筛选
 
-gas fee: gas limit < 15,000，priority fee < 88gwei 可通过筛选
-
-同一个项目仅可 mint 一次(防止监听地址重复 mint 一个项目烧太多 gas)
+- 同一个项目仅可 mint 一次(防止监听地址重复 mint 一个项目烧太多 gas)
 
 ### 配置.env
 
@@ -41,7 +40,7 @@ EMAIL_PASSWARD          邮箱授权码
     "max_gas_limit": 最大gas limit,
     "max_gas_price": 最高gas price(gwei),
     "max_priority_fee": 最高矿工费(gwei,主要不要大于gas price),
-    "local_proxy_port": 本地代理端口号(不设置代理将端口设为0)
+    "local_proxy_port": 本地代理端口号(etherscan的api需要代理，不设置代理将端口设为0)
 }
 ```
 
@@ -49,10 +48,10 @@ EMAIL_PASSWARD          邮箱授权码
 
 ```
 test/test_email         测试邮件提醒（qq邮箱）
-test/try_alarm          测试闹钟功能
-test/try_ether`         测试etherscan能否返回数据
+test/test_alarm          测试闹钟功能
+test/test_etherscan         测试etherscan能否返回数据
 test/listen_rinkeby     在rinkeby运行脚本
-test/try_wechat         测试公众号提醒功能(http://push.ijingniu.cn/)
+test/test_wechat         测试公众号提醒功能(http://push.ijingniu.cn/)
 
 测试网可以用这个合约测试：0xa4D8fc7b2Af49a06Ba8Ac047536B71E1c04C9b89
 ```
