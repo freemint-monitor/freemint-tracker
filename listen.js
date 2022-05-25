@@ -156,6 +156,10 @@ const alchemy_subscribe = async (network, address) => {
       const free_mint_amount = config.free_mint_amount
       const payable_mint_amount = config.payable_mint_amount
       const gas_limit = parseInt(txInfo.gas)
+      if (!txInfo.maxPriorityFeePerGas) {
+        console.log("❌ this is not EIP-1559 tx")
+        return
+      }
       const gas_price = ethers.utils.formatUnits(
         parseInt(txInfo.maxPriorityFeePerGas),
         "gwei"
@@ -335,10 +339,10 @@ const alchemy_subscribe = async (network, address) => {
           }
         }
       } catch (error) {
-        console.error(error)
+        console.error(error.message)
       }
     }
   )
 }
 
-main().catch((err) => console.log(err))
+main().catch((err) => console.log(err.message))
