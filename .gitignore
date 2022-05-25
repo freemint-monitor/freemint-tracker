@@ -1,7 +1,8 @@
-.env
 /node_modules
 /logs
+/alarm
+.env
+yarn.lock
+config.json
 mintedAddress.json
 ecosystem.config.cjs
-/alarm
-yarn.lock
