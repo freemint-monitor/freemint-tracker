@@ -188,10 +188,7 @@ const alchemy_subscribe = async (network, address) => {
         // loader.start()
         return
       }
-      if (
-        gas_limit > config.max_gas_limit ||
-        gas_price > config.max_priority_fee
-      ) {
+      if (gas_limit > config.max_gas_limit) {
         console.log(chalk.red("❌ gas is too high!"))
         return
       }
@@ -240,7 +237,13 @@ const alchemy_subscribe = async (network, address) => {
                 to: txInfo.to,
                 gasLimit: txInfo.gas,
                 data: txInfo.input,
-                maxPriorityFeePerGas: txInfo.maxPriorityFeePerGas,
+                maxPriorityFeePerGas:
+                  ethers.utils.formatUnits(
+                    parseInt(txInfo.maxPriorityFeePerGas),
+                    "gwei"
+                  ) > config.max_priority_fee && !PAYABLE
+                    ? config.max_priority_fee * 1000000000
+                    : txInfo.maxPriorityFeePerGas,
                 maxFeePerGas:
                   ethers.utils.formatUnits(
                     parseInt(txInfo.maxFeePerGas),
