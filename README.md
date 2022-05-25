@@ -27,10 +27,6 @@ EMAIL_ACCOUNT           qq账号
 EMAIL_PASSWARD          邮箱授权码
 ```
 
-```
-另外`utils/etherscan`下有代理配置，如果系统全局代理可忽略
-```
-
 ### 配置 config.json
 
 ```
