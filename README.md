@@ -27,16 +27,25 @@ EMAIL_ACCOUNT           qq账号
 EMAIL_PASSWARD          邮箱授权码
 ```
 
-### 配置 config.json
+### 配置 config.js
 
 ```
-{
-    "free_mint_amount": 免费最大单笔交易数量,
-    "payable_mint_amount": 收费最大单笔交易数量,
-    "max_gas_limit": 最大gas limit,
-    "max_gas_price": 最高gas price(gwei),
-    "max_priority_fee": 最高矿工费(gwei,主要不要大于gas price),
-    "local_proxy_port": 本地代理端口号(etherscan的api需要代理，不设置代理将端口设为0)
+export const config = {
+  free: {
+    max_gas_limit: 最大gas limit,
+    max_gas_price: 最大gas price,
+    max_priority_fee: 最大矿工费,
+    max_mint_amount: 最大单笔交易token数量,
+  },
+  payable: {
+    max_gas_limit: 最大gas limit,
+    max_gas_price: 最大gas price,
+    max_priority_fee: 最大矿工费,
+    max_mint_amount: 最大单笔交易token数量,
+    max_payable_amount: 最大可支付eth数量,
+  },
+  local_proxy_port: 本地代理端口（不需要就填0）,
+  keywords_filter: ["azuki", "zuki", "doodles", "888", "666"] (token关键词过滤),
 }
 ```
 

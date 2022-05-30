@@ -1,10 +1,11 @@
-import fs from 'fs'
+import fs from "fs"
 import axios from "axios"
 import dotenv from "dotenv"
+import { config } from "../config.js"
 dotenv.config(".env")
 
 const ETHERSCAN_URL = "https://api.etherscan.io/api"
-const PORT = JSON.parse(fs.readFileSync('config.json')).local_proxy_port
+const PORT = config.local_proxy_port
 const LOCAL_PROXY = PORT
   ? { protocol: "http", host: "127.0.0.1", port: PORT }
   : null
