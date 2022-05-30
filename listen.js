@@ -48,7 +48,7 @@ if (args.alarm) ALARM = true
 
 const main = async () => {
   console.clear()
-  alchemy_subscribe("rinkeby", TARGET_ADDRESS)
+  alchemy_subscribe("mainnet", TARGET_ADDRESS)
 }
 
 /**
