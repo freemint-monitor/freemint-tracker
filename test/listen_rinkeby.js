@@ -168,10 +168,7 @@ const alchemy_subscribe = async (network, address) => {
         console.log("❌ this is not EIP-1559 tx")
         return
       }
-      // const gas_price = ethers.utils.formatUnits(
-      //   parseInt(txInfo.maxPriorityFeePerGas),
-      //   "gwei"
-      // )
+
       /**
        * @description
        *  print in console when finding a transaction
@@ -215,6 +212,17 @@ const alchemy_subscribe = async (network, address) => {
           return
         }
         const contract = new ethers.Contract(txInfo.to, abi, provider)
+        if (!checkERC721(abi)) {
+          try {
+            const imple_address = await contract.implementation()
+            abi = await etherscan.getABIbyContractAddress(imple_address)
+            contract = new ethers.Contract(address, abi, provider)
+          } catch (error) {
+            console.error(error)
+            console.log(`❌ it's not a ERC721 contract`)
+            return
+          }
+        }
         const token_name = await contract.name()
         const method = contract.interface.getFunction(txInfo.input.slice(0, 10))
         const functionData = contract.interface.decodeFunctionData(
@@ -228,10 +236,6 @@ const alchemy_subscribe = async (network, address) => {
          */
         let txWaitToBeSent = []
 
-        if (!checkERC721(abi)) {
-          console.log(chalk.red(`❌ it's not an ERC721 tx`))
-          return
-        }
         console.log(
           `🤑 it's an ERC721 tx, contract address: ${chalk.green(
             txInfo.to
