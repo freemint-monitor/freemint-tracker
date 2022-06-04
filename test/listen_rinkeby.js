@@ -1,5 +1,6 @@
 import { createAlchemyWeb3 } from "@alch/alchemy-web3"
 import { printBanner } from "../cli-style/banner.js"
+import { sendWechat } from "../utils/send_wechat.js"
 import { etherscan } from "./etherscan_rinkeby.js"
 import { playSound } from "../utils/play_alarm.js"
 import { sendEmail } from "../utils/send_mail.js"
@@ -302,13 +303,26 @@ const alchemy_subscribe = async (network, address) => {
               params.push(functionData[j])
             } else {
               console.log("❌ can't resolve paramters!")
-              await sendEmail(
-                "前端MINT事件😊",
-                `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
+              if (config.notification_type.includes("email")) {
+                await sendEmail(
+                  "前端MINT事件😊",
+                  `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
+                    network == "mainnet" ? "" : network + "."
+                  }etherscan.io/tx/${txInfo.hash}</p>`
+                )
+                console.log("📧 Mail sending successed!")
+              }
+              if (config.notification_type.includes("wechat")) {
+                await sendWechat(
+                  "前端MINT事件😊",
+                  `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b>
+                [etherscan链接](https://${
                   network == "mainnet" ? "" : network + "."
-                }etherscan.io/tx/${txInfo.hash}</p>`
-              )
-              console.log("📧 Mail sending successed!")
+                }etherscan.io/tx/${txInfo.hash})
+                `
+                )
+                console.log("💻 Wechat sending successed!")
+              }
               return
             }
           }
@@ -361,12 +375,24 @@ const alchemy_subscribe = async (network, address) => {
         // send email
         if (process.env.EMAIL_ACCOUNT && process.env.EMAIL_PASSWARD) {
           try {
-            await sendEmail(
-              "发送mint交易😊",
-              `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://etherscan.io/tx/${res[0].hash}</p>`
-            )
-            console.log("📧 Mail sending successed!")
+            if (config.notification_type.includes("email")) {
+              await sendEmail(
+                "发送mint交易😊",
+                `<b>MINT 成功, 下方链接跳转etherscan</b><p>https://etherscan.io/tx/${res[0].hash}</p>`
+              )
+              console.log("📧 Mail sending successed!")
+            }
+            if (config.notification_type.includes("wechat")) {
+              await sendWechat(
+                "发送mint交易😊",
+                `<b>MINT 成功, 下方链接跳转etherscan<</b>
+              [etherscan链接](https://etherscan.io/tx/${res[0].hash})
+              `
+              )
+              console.log("💻 Wechat sending successed!")
+            }
           } catch (error) {
+            console.log(error)
             console.log("❌ Mail sending failed!")
           }
         }

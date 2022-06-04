@@ -27,4 +27,5 @@ export const config = {
     "666",
     "999"
   ],
+  notification_type: ['wechat', 'email']
 }
