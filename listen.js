@@ -270,8 +270,8 @@ const alchemy_subscribe = async (network, address) => {
                     parseInt(txInfo.maxPriorityFeePerGas),
                     "gwei"
                   ) > max_priority_fee
-                    ? max_priority_fee * 1000000000
-                    : txInfo.maxPriorityFeePerGas,
+                    ? (max_priority_fee + 1.5) * 1000000000
+                    : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
                 maxFeePerGas:
                   ethers.utils.formatUnits(
                     parseInt(txInfo.maxFeePerGas),
@@ -316,7 +316,9 @@ const alchemy_subscribe = async (network, address) => {
                 await sendWechat(
                   "前端MINT事件😊",
                   `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b>
-                [etherscan链接](https://rinkeby.etherscan.io/address/0x7d4d243ed1b432d6eda029f5e35a4e5c871738ad/)
+                [etherscan链接](https://${
+                  network == "mainnet" ? "" : network + "."
+                }etherscan.io/tx/${txInfo.hash})
                 `
                 )
                 console.log("💻 Wechat sending successed!")
@@ -339,8 +341,8 @@ const alchemy_subscribe = async (network, address) => {
                   parseInt(txInfo.maxPriorityFeePerGas),
                   "gwei"
                 ) > max_priority_fee
-                  ? max_priority_fee * 1000000000
-                  : txInfo.maxPriorityFeePerGas,
+                  ? (max_priority_fee + 1.5) * 1000000000
+                  : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
               maxFeePerGas:
                 ethers.utils.formatUnits(
                   parseInt(txInfo.maxFeePerGas),
@@ -382,14 +384,15 @@ const alchemy_subscribe = async (network, address) => {
             }
             if (config.notification_type.includes("wechat")) {
               await sendWechat(
-                "前端MINT事件😊",
-                `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b>
-              [etherscan链接](https://rinkeby.etherscan.io/address/0x7d4d243ed1b432d6eda029f5e35a4e5c871738ad/)
+                "发送mint交易😊",
+                `<b>MINT 成功, 下方链接跳转etherscan<</b>
+              [etherscan链接](https://etherscan.io/tx/${res[0].hash})
               `
               )
               console.log("💻 Wechat sending successed!")
             }
           } catch (error) {
+            console.log(error)
             console.log("❌ Mail sending failed!")
           }
         }

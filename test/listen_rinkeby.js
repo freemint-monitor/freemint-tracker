@@ -270,8 +270,8 @@ const alchemy_subscribe = async (network, address) => {
                     parseInt(txInfo.maxPriorityFeePerGas),
                     "gwei"
                   ) > max_priority_fee
-                    ? max_priority_fee * 1000000000
-                    : txInfo.maxPriorityFeePerGas,
+                    ? (max_priority_fee + 1.5) * 1000000000
+                    : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
                 maxFeePerGas:
                   ethers.utils.formatUnits(
                     parseInt(txInfo.maxFeePerGas),
@@ -341,8 +341,8 @@ const alchemy_subscribe = async (network, address) => {
                   parseInt(txInfo.maxPriorityFeePerGas),
                   "gwei"
                 ) > max_priority_fee
-                  ? max_priority_fee * 1000000000
-                  : txInfo.maxPriorityFeePerGas,
+                  ? (max_priority_fee + 1.5) * 1000000000
+                  : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
               maxFeePerGas:
                 ethers.utils.formatUnits(
                   parseInt(txInfo.maxFeePerGas),
