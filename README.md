@@ -5,7 +5,7 @@
 在 mempool 中对跟踪的地址的 freemint 交易进行监听，对交易进行筛选后跟单；
 
 筛选条件有：
-- 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量<3 可通过筛选
+- 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量 < 3 可通过筛选
 
 - mint 函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
 
@@ -38,12 +38,14 @@ export const config = {
     max_mint_amount: 最大单笔交易token数量,
   },
   payable: {
+    tracker_wallets: 指定哪些钱包跟单，不需要就置为空数组,
     max_gas_limit: 最大gas limit,
     max_gas_price: 最大gas price,
     max_priority_fee: 最大矿工费,
     max_mint_amount: 最大单笔交易token数量,
     max_payable_amount: 最大可支付eth数量,
   },
+  extra_priority_fee: 额外矿工费（你想做卷王么？🤪）,
   local_proxy_port: 本地代理端口（不需要就填0）,
   keywords_filter: ["azuki", "zuki", "doodles", "888", "666"] (token关键词过滤),
 }

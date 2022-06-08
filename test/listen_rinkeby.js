@@ -68,7 +68,7 @@ const alchemy_subscribe = async (network, address) => {
   let wallets
   if (network == "mainnet") {
     wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
-    if (LEVERAGE) {
+    if (LEVERAGE && !PAYABLE) {
       let i = 1
       while (i) {
         if (process.env[`MAINNET_PRIVATE_KEY_${i}`]) {
@@ -78,11 +78,21 @@ const alchemy_subscribe = async (network, address) => {
           i++
         } else break
       }
+    } else if (LEVERAGE && PAYABLE) {
+      for (let index of config.payable.tracker_wallets) {
+        if (process.env[`MAINNET_PRIVATE_KEY_${index}`])
+          wallets.push(
+            new ethers.Wallet(
+              process.env[`MAINNET_PRIVATE_KEY_${index}`],
+              provider
+            )
+          )
+      }
     }
   }
   if (network == "rinkeby") {
     wallets = [new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)]
-    if (LEVERAGE) {
+    if (LEVERAGE && !PAYABLE) {
       let i = 1
       while (i) {
         if (process.env[`RINKEBY_PRIVATE_KEY_${i}`]) {
@@ -91,6 +101,16 @@ const alchemy_subscribe = async (network, address) => {
           )
           i++
         } else break
+      }
+    } else if (LEVERAGE && PAYABLE) {
+      for (let index of config.payable.tracker_wallets) {
+        if (process.env[`RINKEBY_PRIVATE_KEY_${index}`])
+          wallets.push(
+            new ethers.Wallet(
+              process.env[`RINKEBY_PRIVATE_KEY_${index}`],
+              provider
+            )
+          )
       }
     }
   }
@@ -126,22 +146,33 @@ const alchemy_subscribe = async (network, address) => {
     },
   ]
   if (LEVERAGE) {
-    let i = 1
-    while (i) {
-      if (process.env[`${network.toUpperCase()}_PRIVATE_KEY_${i}`]) {
-        banner.splice(2 + i, 0, {
-          label: `👛 Current Main Wallet ${i} `,
-          content: await wallets[i].getAddress(),
-        })
-        banner.splice(3 + 2 * i, 0, {
-          label: `💰 Wallet ${i} Balance`,
-          content: `${ethers.utils.formatEther(
-            await wallets[i].getBalance()
-          )}Ξ`,
-        })
-        i++
-      } else break
+    for (let i = 1; i < wallets.length; i++) {
+      banner.splice(2 + i, 0, {
+        label: `👛 Current Main Wallet ${i} `,
+        content: await wallets[i].getAddress(),
+      })
+      banner.splice(3 + 2 * i, 0, {
+        label: `💰 Wallet ${i} Balance`,
+        content: `${ethers.utils.formatEther(await wallets[i].getBalance())}Ξ`,
+      })
     }
+    // let i = 1
+
+    // while (i) {
+    //   if (process.env[`${network.toUpperCase()}_PRIVATE_KEY_${i}`]) {
+    //     banner.splice(2 + i, 0, {
+    //       label: `👛 Current Main Wallet ${i} `,
+    //       content: await wallets[i].getAddress(),
+    //     })
+    //     banner.splice(3 + 2 * i, 0, {
+    //       label: `💰 Wallet ${i} Balance`,
+    //       content: `${ethers.utils.formatEther(
+    //         await wallets[i].getBalance()
+    //       )}Ξ`,
+    //     })
+    //     i++
+    //   } else break
+    // }
   }
   printBanner(`Monitoring Info`, banner, 100)
   let minted = []
@@ -270,8 +301,10 @@ const alchemy_subscribe = async (network, address) => {
                     parseInt(txInfo.maxPriorityFeePerGas),
                     "gwei"
                   ) > max_priority_fee
-                    ? (max_priority_fee + 1.5) * 1000000000
-                    : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
+                    ? (max_priority_fee + config.extra_priority_fee) *
+                      1000000000
+                    : Number(txInfo.maxPriorityFeePerGas) +
+                      config.extra_priority_fee * 1000000000,
                 maxFeePerGas:
                   ethers.utils.formatUnits(
                     parseInt(txInfo.maxFeePerGas),
@@ -341,8 +374,9 @@ const alchemy_subscribe = async (network, address) => {
                   parseInt(txInfo.maxPriorityFeePerGas),
                   "gwei"
                 ) > max_priority_fee
-                  ? (max_priority_fee + 1.5) * 1000000000
-                  : Number(txInfo.maxPriorityFeePerGas) + 1500000000,
+                  ? (max_priority_fee + config.extra_priority_fee) * 1000000000
+                  : Number(txInfo.maxPriorityFeePerGas) +
+                    config.extra_priority_fee * 1000000000,
               maxFeePerGas:
                 ethers.utils.formatUnits(
                   parseInt(txInfo.maxFeePerGas),
