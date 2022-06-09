@@ -6,7 +6,7 @@ export const config = {
     max_mint_amount: 5,
   },
   payable: {
-    tracker_wallets: [2],
+    tracker_wallets: [],
     max_gas_limit: 150000,
     max_gas_price: 300,
     max_priority_fee: 88,
@@ -27,7 +27,7 @@ export const config = {
     "doodles",
     "888",
     "666",
-    "999"
+    "999",
   ],
-  notification_type: ['wechat', 'email']
+  notification_type: ["wechat", "email"],
 }

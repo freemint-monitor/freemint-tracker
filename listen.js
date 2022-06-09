@@ -28,6 +28,7 @@ let TARGET_ADDRESS = ""
 let PAYABLE = false
 let LEVERAGE = false
 let ALARM = false
+let KING = false
 
 // config the monor address and mode
 if (!address) {
@@ -46,6 +47,8 @@ if (args.payable) PAYABLE = true
 if (args.leverage) LEVERAGE = true
 
 if (args.alarm) ALARM = true
+
+if (args.king) KING = true
 
 const main = async () => {
   console.clear()
@@ -156,23 +159,6 @@ const alchemy_subscribe = async (network, address) => {
         content: `${ethers.utils.formatEther(await wallets[i].getBalance())}Ξ`,
       })
     }
-    // let i = 1
-
-    // while (i) {
-    //   if (process.env[`${network.toUpperCase()}_PRIVATE_KEY_${i}`]) {
-    //     banner.splice(2 + i, 0, {
-    //       label: `👛 Current Main Wallet ${i} `,
-    //       content: await wallets[i].getAddress(),
-    //     })
-    //     banner.splice(3 + 2 * i, 0, {
-    //       label: `💰 Wallet ${i} Balance`,
-    //       content: `${ethers.utils.formatEther(
-    //         await wallets[i].getBalance()
-    //       )}Ξ`,
-    //     })
-    //     i++
-    //   } else break
-    // }
   }
   printBanner(`Monitoring Info`, banner, 100)
   let minted = []
@@ -281,12 +267,13 @@ const alchemy_subscribe = async (network, address) => {
           console.log(chalk.red("❌ this nft has been minted"))
           return
         }
-        for (let keyword of config.keywords_filter) {
-          if (token_name.toLowerCase().indexOf(keyword) >= 0) {
-            console.log(chalk.red(`❌ contains banned keyword`))
-            return
+        if (!KING)
+          for (let keyword of config.keywords_filter) {
+            if (token_name.toLowerCase().indexOf(keyword) >= 0) {
+              console.log(chalk.red(`❌ contains banned keyword`))
+              return
+            }
           }
-        }
         for (let i = 0; i < wallets.length; i++) {
           let wallet = wallets[i]
           let params = []
