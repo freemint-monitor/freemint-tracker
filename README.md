@@ -5,11 +5,11 @@
 在 mempool 中对跟踪的地址的 freemint 交易进行监听，对交易进行筛选后跟单；
 
 筛选条件有：
-- 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量 < 3 可通过筛选
+- 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量 小于 3 可通过筛选
 
 - mint 函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
 
-- gas fee: gas limit < 15,000，priority fee < 88gwei 可通过筛选
+- gas fee: gas limit 小于 15,000，priority fee 小于 88gwei 可通过筛选
 
 - 同一个项目仅可 mint 一次(防止监听地址重复 mint 一个项目烧太多 gas)
 
