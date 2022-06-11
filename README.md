@@ -71,6 +71,7 @@ node listen 被监听地址 --alarm --payble --leverage
 --alarm                 开启闹钟
 --payable               付费模式
 --leverage              杠杆模式（多钱包跟）
+--king                  狗王模式（取消关键词过滤功能）
 ```
 
 ### logs
