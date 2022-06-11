@@ -69,9 +69,13 @@ const alchemy_subscribe = async (network, address) => {
   )
 
   let wallets
+  let payable_wallets
   if (network == "mainnet") {
     wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
-    if (LEVERAGE && !PAYABLE) {
+    payable_wallets = [
+      new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider),
+    ]
+    if (LEVERAGE) {
       let i = 1
       while (i) {
         if (process.env[`MAINNET_PRIVATE_KEY_${i}`]) {
@@ -81,10 +85,11 @@ const alchemy_subscribe = async (network, address) => {
           i++
         } else break
       }
-    } else if (LEVERAGE && PAYABLE) {
+    }
+    if (LEVERAGE && PAYABLE) {
       for (let index of config.payable.tracker_wallets) {
         if (process.env[`MAINNET_PRIVATE_KEY_${index}`])
-          wallets.push(
+          payable_wallets.push(
             new ethers.Wallet(
               process.env[`MAINNET_PRIVATE_KEY_${index}`],
               provider
@@ -92,10 +97,14 @@ const alchemy_subscribe = async (network, address) => {
           )
       }
     }
+    console.log(payable_wallets)
   }
   if (network == "rinkeby") {
     wallets = [new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)]
-    if (LEVERAGE && !PAYABLE) {
+    payable_wallets = [
+      new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider),
+    ]
+    if (LEVERAGE) {
       let i = 1
       while (i) {
         if (process.env[`RINKEBY_PRIVATE_KEY_${i}`]) {
@@ -105,10 +114,11 @@ const alchemy_subscribe = async (network, address) => {
           i++
         } else break
       }
-    } else if (LEVERAGE && PAYABLE) {
+    }
+    if (LEVERAGE && PAYABLE) {
       for (let index of config.payable.tracker_wallets) {
         if (process.env[`RINKEBY_PRIVATE_KEY_${index}`])
-          wallets.push(
+          payable_wallets.push(
             new ethers.Wallet(
               process.env[`RINKEBY_PRIVATE_KEY_${index}`],
               provider
@@ -129,11 +139,12 @@ const alchemy_subscribe = async (network, address) => {
       content:
         (PAYABLE ? "payable" : "free") +
         (LEVERAGE ? " & leverage" : "") +
-        (ALARM ? " & alarm" : ""),
+        (ALARM ? " & alarm" : "") +
+        (KING ? " & king" : ""),
     },
     {
       label: "👛 Current Main Wallet ",
-      content: await wallets[0].getAddress(),
+      content: (await wallets[0].getAddress()) + (PAYABLE ? " 🌟" : ""),
     },
     {
       label: "💰 Wallet Balance",
@@ -150,9 +161,13 @@ const alchemy_subscribe = async (network, address) => {
   ]
   if (LEVERAGE) {
     for (let i = 1; i < wallets.length; i++) {
+      let payable = false
+      payable_wallets.forEach(async (pay) => {
+        pay.address == wallets[i].address ? (payable = true) : (payable = false)
+      })
       banner.splice(2 + i, 0, {
         label: `👛 Current Main Wallet ${i} `,
-        content: await wallets[i].getAddress(),
+        content: (await wallets[i].getAddress()) + (payable ? " 🌟" : ""),
       })
       banner.splice(3 + 2 * i, 0, {
         label: `💰 Wallet ${i} Balance`,
@@ -274,9 +289,16 @@ const alchemy_subscribe = async (network, address) => {
               return
             }
           }
-        for (let i = 0; i < wallets.length; i++) {
-          let wallet = wallets[i]
+        for (
+          let i = 0;
+          i <
+          (Number(txInfo.value) == 0 ? wallets.length : payable_wallets.length);
+          i++
+        ) {
+          let wallet =
+            Number(txInfo.value) == 0 ? wallets[i] : payable_wallets[i]
           let params = []
+          // the condition of non-param
           if (!method.inputs.length) {
             txWaitToBeSent.push(
               wallet.sendTransaction({
