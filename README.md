@@ -38,7 +38,7 @@ export const config = {
     max_mint_amount: 最大单笔交易token数量,
   },
   payable: {
-    tracker_wallets: 指定哪些钱包跟单，不需要就置为空数组,
+    tracker_wallets: [指定哪些钱包跟单，不需要就置为空数组],
     max_gas_limit: 最大gas limit,
     max_gas_price: 最大gas price,
     max_priority_fee: 最大矿工费,
@@ -47,7 +47,9 @@ export const config = {
   },
   extra_priority_fee: 额外矿工费（你想做卷王么？🤪）,
   local_proxy_port: 本地代理端口（不需要就填0）,
+  alarm_mp3_name: '指定闹钟名称，闹钟在alarm目录下存放', 
   keywords_filter: ["azuki", "zuki", "doodles", "888", "666"] (token关键词过滤),
+  notification_type: ["wechat", "email"], 通知类型：微信公众号和邮箱, 不需要的删除即可
 }
 ```
 
