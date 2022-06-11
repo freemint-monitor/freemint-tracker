@@ -3,10 +3,10 @@ export const config = {
     max_gas_limit: 150000,
     max_gas_price: 300,
     max_priority_fee: 88,
-    max_mint_amount: 5,
+    max_mint_amount: 2,
   },
   payable: {
-    tracker_wallets: [],
+    tracker_wallets: [2],
     max_gas_limit: 150000,
     max_gas_price: 300,
     max_priority_fee: 88,
@@ -15,6 +15,7 @@ export const config = {
   },
   extra_priority_fee: 1.8,
   local_proxy_port: 7890,
+  alarm_mp3_name: 'alarm',
   keywords_filter: [
     "not",
     "okay",
