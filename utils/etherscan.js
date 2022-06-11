@@ -1,4 +1,3 @@
-import fs from "fs"
 import axios from "axios"
 import dotenv from "dotenv"
 import { config } from "../config.js"
