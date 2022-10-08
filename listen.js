@@ -17,7 +17,7 @@ import {
   writeLog,
   getMinted,
   writeMinted,
-} from "../utils/utils.js"
+} from "./utils/utils.js"
 
 dotenv.config("./.env")
 
@@ -98,7 +98,6 @@ const alchemy_subscribe = async (network, address) => {
           )
       }
     }
-    console.log(payable_wallets)
   }
   if (network == "goerli") {
     wallets = [new ethers.Wallet(process.env.GOERLI_PRIVATE_KEY, provider)]
