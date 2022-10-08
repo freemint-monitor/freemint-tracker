@@ -52,7 +52,7 @@ if (args.king) KING = true
 
 const main = async () => {
   console.clear()
-  alchemy_subscribe("rinkeby", TARGET_ADDRESS)
+  alchemy_subscribe("goerli", TARGET_ADDRESS)
 }
 
 /**
@@ -99,17 +99,17 @@ const alchemy_subscribe = async (network, address) => {
     }
     console.log(payable_wallets)
   }
-  if (network == "rinkeby") {
-    wallets = [new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider)]
+  if (network == "goerli") {
+    wallets = [new ethers.Wallet(process.env.GOERLI_PRIVATE_KEY, provider)]
     payable_wallets = [
-      new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, provider),
+      new ethers.Wallet(process.env.GOERLI_PRIVATE_KEY, provider),
     ]
     if (LEVERAGE) {
       let i = 1
       while (i) {
-        if (process.env[`RINKEBY_PRIVATE_KEY_${i}`]) {
+        if (process.env[`GOERLI_PRIVATE_KEY_${i}`]) {
           wallets.push(
-            new ethers.Wallet(process.env[`RINKEBY_PRIVATE_KEY_${i}`], provider)
+            new ethers.Wallet(process.env[`GOERLI_PRIVATE_KEY_${i}`], provider)
           )
           i++
         } else break
@@ -117,10 +117,10 @@ const alchemy_subscribe = async (network, address) => {
     }
     if (LEVERAGE && PAYABLE) {
       for (let index of config.payable.tracker_wallets) {
-        if (process.env[`RINKEBY_PRIVATE_KEY_${index}`])
+        if (process.env[`GOERLI_PRIVATE_KEY_${index}`])
           payable_wallets.push(
             new ethers.Wallet(
-              process.env[`RINKEBY_PRIVATE_KEY_${index}`],
+              process.env[`GOERLI_PRIVATE_KEY_${index}`],
               provider
             )
           )
@@ -196,6 +196,7 @@ const alchemy_subscribe = async (network, address) => {
       const max_priority_fee = PAYABLE
         ? config.payable.max_priority_fee
         : config.free.max_priority_fee
+      const fixed_max_gas_price = config.fixed_max_gas_price
       const gas_limit = parseInt(txInfo.gas)
       if (!txInfo.maxPriorityFeePerGas) {
         console.log("❌ this is not EIP-1559 tx")
@@ -315,10 +316,12 @@ const alchemy_subscribe = async (network, address) => {
                     : Number(txInfo.maxPriorityFeePerGas) +
                       config.extra_priority_fee * 1000000000,
                 maxFeePerGas:
-                  ethers.utils.formatUnits(
-                    parseInt(txInfo.maxFeePerGas),
-                    "gwei"
-                  ) > max_gas_price
+                  fixed_max_gas_price > 0
+                    ? fixed_max_gas_price * 1000000000
+                    : ethers.utils.formatUnits(
+                        parseInt(txInfo.maxFeePerGas),
+                        "gwei"
+                      ) > max_gas_price
                     ? max_gas_price * 1000000000
                     : txInfo.maxFeePerGas,
                 value: txInfo.value,
@@ -387,10 +390,12 @@ const alchemy_subscribe = async (network, address) => {
                   : Number(txInfo.maxPriorityFeePerGas) +
                     config.extra_priority_fee * 1000000000,
               maxFeePerGas:
-                ethers.utils.formatUnits(
-                  parseInt(txInfo.maxFeePerGas),
-                  "gwei"
-                ) > max_gas_price
+                fixed_max_gas_price > 0
+                  ? fixed_max_gas_price * 1000000000
+                  : ethers.utils.formatUnits(
+                      parseInt(txInfo.maxFeePerGas),
+                      "gwei"
+                    ) > max_gas_price
                   ? max_gas_price * 1000000000
                   : txInfo.maxFeePerGas,
               value: txInfo.value,

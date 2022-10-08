@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 import {config} from "../config.js"
 dotenv.config(".env")
 
-const ETHERSCAN_URL = "https://api-rinkeby.etherscan.io/api"
+const ETHERSCAN_URL = "https://api-goerli.etherscan.io/api"
 const PORT = config.local_proxy_port
 const LOCAL_PROXY = PORT
   ? { protocol: "http", host: "127.0.0.1", port: PORT }
