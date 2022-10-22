@@ -59,6 +59,23 @@ const getABIbyContractAddress = async (address) => {
   }
 }
 
+// 获取历史交易记录
+const getHistory = async (address, startblock, endblock) => {
+  const params = {
+    module: "account",
+    action: "txlist",
+    address,
+    startblock,
+    endblock,
+  }
+  try {
+    let res = await sendAxiosRequest(params)
+    if (res.status == "200") return res.data.result
+  } catch (error) {
+    console.error(error.message)
+  }
+}
+
 // 发送axios请求
 const sendAxiosRequest = async (params) => {
   params.apikey = ETHERSCAN_API
@@ -74,4 +91,5 @@ export const etherscan = {
   getTxInfoByUserAddress,
   getTokenInfoByConractAddress,
   getABIbyContractAddress,
+  getHistory
 }

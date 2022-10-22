@@ -1,4 +1,5 @@
 import { createAlchemyWeb3 } from "@alch/alchemy-web3"
+import { Alchemy, Network } from "alchemy-sdk"
 import { printBanner } from "../cli-style/banner.js"
 import { sendWechat } from "../utils/send_wechat.js"
 import { etherscan } from "./etherscan_rinkeby.js"
@@ -30,7 +31,7 @@ let LEVERAGE = false
 let ALARM = false
 let KING = false
 
-// config the monor address and mode
+// config the monored address and mode
 if (!address) {
   console.log(chalk.red("please input target address!"))
   process.exit(1)
@@ -61,16 +62,20 @@ const main = async () => {
  * @param {string} address the address you are gonna listen to
  */
 const alchemy_subscribe = async (network, address) => {
+  const settings = {
+    apiKey: "h9umhPJA4Jz_VxJ1_potwcDwn1AI68yg",
+    network: network == "homestead" ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+  }
+  const alchemy = new Alchemy(settings)
   let alchemy_url = `wss://eth-${network}.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`
-  let web3 = createAlchemyWeb3(alchemy_url)
-  const provider = new ethers.providers.AlchemyProvider(
-    network,
-    process.ALCHEMY_KEY
-  )
+  // let web3 = createAlchemyWeb3(alchemy_url)
+  const provider = new ethers.providers.InfuraProvider(network, [
+    "dac19ba0341a4ca48d42ae0cdf145481",
+  ])
 
   let wallets
   let payable_wallets
-  if (network == "mainnet") {
+  if (network == "homestead") {
     wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
     payable_wallets = [
       new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider),
@@ -97,7 +102,6 @@ const alchemy_subscribe = async (network, address) => {
           )
       }
     }
-    console.log(payable_wallets)
   }
   if (network == "goerli") {
     wallets = [new ethers.Wallet(process.env.GOERLI_PRIVATE_KEY, provider)]
@@ -177,12 +181,12 @@ const alchemy_subscribe = async (network, address) => {
   }
   printBanner(`Monitoring Info`, banner, 100)
   let minted = []
-  web3.eth.subscribe(
-    "alchemy_filteredFullPendingTransactions",
+  alchemy.ws.on(
     {
-      address: address,
+      method: "alchemy_pendingTransactions",
+      fromAddress: address,
     },
-    async (err, txInfo) => {
+    async (txInfo) => {
       const time = new Date()
       const max_mint_amount = PAYABLE
         ? config.payable.max_mint_amount
@@ -209,7 +213,6 @@ const alchemy_subscribe = async (network, address) => {
        *  transactions are filtered based on user paraments
        */
 
-      if (err) return
       // loader.stop()
       if (txInfo == null) return
       if (txInfo.from.toLowerCase() !== address.toLowerCase()) return
@@ -352,7 +355,7 @@ const alchemy_subscribe = async (network, address) => {
                 await sendEmail(
                   "前端MINT事件😊",
                   `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
-                    network == "mainnet" ? "" : network + "."
+                    network == "homestead" ? "" : network + "."
                   }etherscan.io/tx/${txInfo.hash}</p>`
                 )
                 console.log("📧 Mail sending successed!")
@@ -362,7 +365,7 @@ const alchemy_subscribe = async (network, address) => {
                   "前端MINT事件😊",
                   `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b>
                 [etherscan链接](https://${
-                  network == "mainnet" ? "" : network + "."
+                  network == "homestead" ? "" : network + "."
                 }etherscan.io/tx/${txInfo.hash})
                 `
                 )
@@ -445,10 +448,10 @@ const alchemy_subscribe = async (network, address) => {
           }
         }
       } catch (error) {
-        console.error(error.message)
+        console.error(error)
       }
     }
   )
 }
 
-main().catch((err) => console.log(err.message))
+main().catch((err) => console.log(err))

@@ -1,10 +1,9 @@
-#!/usr/bin/env node
-import { createAlchemyWeb3 } from "@alch/alchemy-web3"
-import { sendWechat } from "./utils/send_wechat.js"
 import { printBanner } from "./cli-style/banner.js"
+import { sendWechat } from "./utils/send_wechat.js"
+import { etherscan } from "./utils/etherscan.js"
 import { playSound } from "./utils/play_alarm.js"
 import { sendEmail } from "./utils/send_mail.js"
-import { etherscan } from "./utils/etherscan.js"
+import { Network, Alchemy } from "alchemy-sdk"
 import { config } from "./config.js"
 import { ethers } from "ethers"
 import minimist from "minimist"
@@ -31,7 +30,7 @@ let LEVERAGE = false
 let ALARM = false
 let KING = false
 
-// config the monor address and mode
+// config the monored address and mode
 if (!address) {
   console.log(chalk.red("please input target address!"))
   process.exit(1)
@@ -53,7 +52,7 @@ if (args.king) KING = true
 
 const main = async () => {
   console.clear()
-  alchemy_subscribe("mainnet", TARGET_ADDRESS)
+  alchemy_subscribe("homestead", TARGET_ADDRESS)
 }
 
 /**
@@ -62,16 +61,20 @@ const main = async () => {
  * @param {string} address the address you are gonna listen to
  */
 const alchemy_subscribe = async (network, address) => {
-  let alchemy_url = `wss://eth-${network}.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`
-  let web3 = createAlchemyWeb3(alchemy_url)
+  const settings = {
+    apiKey: "h9umhPJA4Jz_VxJ1_potwcDwn1AI68yg",
+    network: network == "homestead" ? Network.ETH_MAINNET : Network.ETH_GOERLI,
+  }
+  const alchemy = new Alchemy(settings)
+  // let web3 = createAlchemyWeb3(alchemy_url)
   const provider = new ethers.providers.AlchemyProvider(
-    network,
-    process.ALCHEMY_KEY
+    "homestead",
+    process.env.ALCHEMY_KEY
   )
 
   let wallets
   let payable_wallets
-  if (network == "mainnet") {
+  if (network == "homestead") {
     wallets = [new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider)]
     payable_wallets = [
       new ethers.Wallet(process.env.MAINNET_PRIVATE_KEY, provider),
@@ -127,7 +130,6 @@ const alchemy_subscribe = async (network, address) => {
       }
     }
   }
-
   // config the banner
   let banner = [
     {
@@ -177,12 +179,12 @@ const alchemy_subscribe = async (network, address) => {
   }
   printBanner(`Monitoring Info`, banner, 100)
   let minted = []
-  web3.eth.subscribe(
-    "alchemy_filteredFullPendingTransactions",
+  alchemy.ws.on(
     {
-      address: address,
+      method: "alchemy_pendingTransactions",
+      fromAddress: address,
     },
-    async (err, txInfo) => {
+    async (txInfo) => {
       const time = new Date()
       const max_mint_amount = PAYABLE
         ? config.payable.max_mint_amount
@@ -209,7 +211,6 @@ const alchemy_subscribe = async (network, address) => {
        *  transactions are filtered based on user paraments
        */
 
-      if (err) return
       // loader.stop()
       if (txInfo == null) return
       if (txInfo.from.toLowerCase() !== address.toLowerCase()) return
@@ -352,7 +353,7 @@ const alchemy_subscribe = async (network, address) => {
                 await sendEmail(
                   "前端MINT事件😊",
                   `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b><p>https://${
-                    network == "mainnet" ? "" : network + "."
+                    network == "homestead" ? "" : network + "."
                   }etherscan.io/tx/${txInfo.hash}</p>`
                 )
                 console.log("📧 Mail sending successed!")
@@ -362,7 +363,7 @@ const alchemy_subscribe = async (network, address) => {
                   "前端MINT事件😊",
                   `<b>该交易可能需要前端mint,请自行检查!下方链接跳转etherscan</b>
                 [etherscan链接](https://${
-                  network == "mainnet" ? "" : network + "."
+                  network == "homestead" ? "" : network + "."
                 }etherscan.io/tx/${txInfo.hash})
                 `
                 )
@@ -445,10 +446,10 @@ const alchemy_subscribe = async (network, address) => {
           }
         }
       } catch (error) {
-        console.error(error.message)
+        console.error(error)
       }
     }
   )
 }
 
-main().catch((err) => console.log(err.message))
+main().catch((err) => console.log(err))

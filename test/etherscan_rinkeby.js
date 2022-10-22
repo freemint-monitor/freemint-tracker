@@ -24,9 +24,8 @@ const getTxInfoByUserAddress = async (address, startblock, endblock) => {
     let res = await sendAxiosRequest(params)
     if (res.status == "200") return res.data.result
   } catch (error) {
-    console.error(error.message)
+    console.error(error)
   }
-  f
 }
 
 // 根据合约地址获取token信息(需要升级pro版)
@@ -40,7 +39,7 @@ const getTokenInfoByConractAddress = async (contractaddress) => {
     let res = await sendAxiosRequest(params)
     if (res.status == "200") return res.data.result
   } catch (error) {
-    console.error(error.message)
+    console.error(error)
   }
 }
 
@@ -55,7 +54,7 @@ const getABIbyContractAddress = async (address) => {
     let res = await sendAxiosRequest(params)
     if (res.status == "200") return res.data.result
   } catch (error) {
-    console.error(error.message)
+    console.error(error)
   }
 }
 
