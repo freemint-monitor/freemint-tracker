@@ -62,7 +62,7 @@ const main = async () => {
  */
 const alchemy_subscribe = async (network, address) => {
   const settings = {
-    apiKey: "h9umhPJA4Jz_VxJ1_potwcDwn1AI68yg",
+    apiKey: process.env.ALCHEMY_KEY,
     network: network == "homestead" ? Network.ETH_MAINNET : Network.ETH_GOERLI,
   }
   const alchemy = new Alchemy(settings)
