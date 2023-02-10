@@ -1,10 +1,21 @@
-﻿# freemint_monitor
+﻿[中文](https://github.com/freemint-monitor/freemint-tracker/blob/main/README-CH.md) / English
+
+<div align="center">
+    <!-- <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    src="https://github.com/TimGrey998/img/blob/main/priview.png">
+    <br> -->
+    <p style="opacity: 0.8"><b>Track the high win rate wallets of mint trasactions</b></p>
+    <p style="opacity: 0.8">跟踪高胜率地址的nft图狗交易</p>
+</div>
+# freemint_monitor
 
 ### 脚本说明
 
 在 mempool 中对跟踪的地址的 freemint 交易进行监听，对交易进行筛选后跟单；
 
 筛选条件有：
+
 - 单笔交易数量，mint 函数参数，gas fee，是否已经 mint 过单笔交易数量 小于 3 可通过筛选
 
 - mint 函数：无参数、参数为地址、参数为数量、参数为地址和数量可通过筛选
@@ -47,7 +58,7 @@ export const config = {
   },
   extra_priority_fee: 额外矿工费（你想做卷王么？🤪）,
   local_proxy_port: 本地代理端口（不需要就填0）,
-  alarm_mp3_name: '指定闹钟名称，闹钟在alarm目录下存放', 
+  alarm_mp3_name: '指定闹钟名称，闹钟在alarm目录下存放',
   keywords_filter: ["azuki", "zuki", "doodles", "888", "666"] (token关键词过滤),
   notification_type: ["wechat", "email"], 通知类型：微信公众号和邮箱, 不需要的删除即可
 }
